@@ -60,7 +60,8 @@ public class WasaPersonBountyIntel extends BaseIntelPlugin implements EveryFrame
 		DESERTER,
 		REMNANT,
 		DERELICT,
-		MERC
+		MERC,
+		PATH
 	}
 	
 	public static float MAX_DURATION = 90f;
@@ -271,7 +272,7 @@ public class WasaPersonBountyIntel extends BaseIntelPlugin implements EveryFrame
 		
 		WeightedRandomPicker<MarketAPI> picker = new WeightedRandomPicker<MarketAPI>();
 		for (MarketAPI market : Global.getSector().getEconomy().getMarketsCopy()) {
-			if (!getSharedData().isParticipating(market.getFactionId())) continue;
+//			if (!getSharedData().isParticipating(market.getFactionId())) continue;
 			if (market.getSize() < 3) continue;
 			if (market.isHidden()) continue;
 			if (market.getFaction().isPlayerFaction()) continue;
@@ -334,6 +335,9 @@ public class WasaPersonBountyIntel extends BaseIntelPlugin implements EveryFrame
 		if (bountyType == BountyType.DERELICT) {
 			factionId = Factions.DERELICT;
 		}
+		if (bountyType == BountyType.PATH) {
+			factionId = Factions.LUDDIC_PATH;
+		}
 		int personLevel = (int) (5 + level * 1.5f);
 		person = OfficerManagerEvent.createOfficer(Global.getSector().getFaction(factionId), 
 												   personLevel, false);
@@ -345,6 +349,7 @@ public class WasaPersonBountyIntel extends BaseIntelPlugin implements EveryFrame
 		picker.add(BountyType.REMNANT, 10f);
 		picker.add(BountyType.MERC, 10f);
 		picker.add(BountyType.DERELICT, 10f);
+		picker.add(BountyType.PATH, 10f);
 		//if (getSharedData().getLevel() >= 3) {
 		if (level >= 4) {
 			picker.add(BountyType.DESERTER, 30f);
@@ -438,16 +443,21 @@ public class WasaPersonBountyIntel extends BaseIntelPlugin implements EveryFrame
 		
 		if (fleet == null) return;
 		
-		if (fleet.isInCurrentLocation() && fleet.getFaction().getId().equals(Factions.NEUTRAL)) {
-			fleet.setFaction(Factions.PIRATES, true);
+		if (fleet.isInCurrentLocation() && fleet.getFaction().getId().equals(Factions.NEUTRAL)) {	
 			if (bountyType == BountyType.REMNANT) {
-				fleet.setFaction(Factions.REMNANTS);
+				fleet.setFaction(Factions.REMNANTS, true);
 			}
 			if (bountyType == BountyType.MERC) {
-				fleet.setFaction(Factions.MERCENARY);
+				fleet.setFaction(Factions.MERCENARY, true);
 			}
 			if (bountyType == BountyType.DERELICT) {
-				fleet.setFaction(Factions.DERELICT);
+				fleet.setFaction(Factions.DERELICT, true);
+			}
+			if (bountyType == BountyType.PIRATE) {
+				fleet.setFaction(Factions.PIRATES, true);
+			}
+			if (bountyType == BountyType.PATH) {
+				fleet.setFaction(Factions.LUDDIC_PATH, true);
 			}
 		} else if (!fleet.isInCurrentLocation() && !fleet.getFaction().getId().equals(Factions.NEUTRAL)) {
 			fleet.setFaction(Factions.NEUTRAL, true);
@@ -598,6 +608,9 @@ public class WasaPersonBountyIntel extends BaseIntelPlugin implements EveryFrame
 		}
 		if (bountyType == BountyType.DERELICT) {
 			fleetFactionId = Factions.DERELICT;
+		}
+		if (bountyType == BountyType.PATH) {
+			fleetFactionId = Factions.LUDDIC_PATH;
 		}
 		float qf = (float) level / 10f;
 		if (qf > 1) qf = 1;
@@ -845,6 +858,7 @@ public class WasaPersonBountyIntel extends BaseIntelPlugin implements EveryFrame
 		if (bountyType == BountyType.DESERTER) type = "a deserter";
 		if (bountyType == BountyType.REMNANT || bountyType == BountyType.DERELICT) type = "an AI threat";
 		if (bountyType == BountyType.MERC) type = "a mercenary scoundral";
+		if (bountyType == BountyType.PATH) type = "a dangerous radical";
 		
 		String has = faction.getDisplayNameHasOrHave();
 		info.addPara(Misc.ucFirst(faction.getDisplayNameWithArticle()) + " " + has + 
